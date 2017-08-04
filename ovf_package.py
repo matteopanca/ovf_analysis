@@ -18,15 +18,18 @@ class OVF_File:
 		self.mincoord = np.zeros(3, dtype=np.float_)
 		self.maxcoord = np.zeros(3, dtype=np.float_)
 		
-		f = open(fname, 'r') #open the file
-		line = f.readline() #OVF version is in first line
-		if '2' in line:
+		f = open(fname, 'rb') #open the file
+		line = f.readline().decode() #OVF version is in first line
+		if '1' in line:
+			self.ovf_version = 1
+		elif '2' in line:
 			self.ovf_version = 2
 		else:
-			self.ovf_version = 1
+			raise RuntimeError('Not valid OVF version')
+			return None
 		
 		while not('# Begin: Data' in line): #parsing the lines
-			line = f.readline()	
+			line = f.readline().decode()
 			found = False
 			for str in param_tuple:
 				if str in line:
@@ -41,24 +44,24 @@ class OVF_File:
 				else:
 					for i in range(3):
 						if i!=0:
-							line = f.readline()
+							line = f.readline().decode()
 						splitted = line.split(' ')
 						data = float(splitted[2].strip('\n'))
-						collect_param[param][0, 2-i] = data
+						collect_param[param][0, 2-i] = data #index order is Z, Y, X
 		
 		self.valuedim = collect_param['valuedim'][0]
-		self.nodes = collect_param['nodes'][0, :]
-		self.stepsize = collect_param['stepsize'][0, :]
-		self.mincoord = collect_param['min'][0, :]
-		self.maxcoord = collect_param['max'][0, :]
+		self.nodes = collect_param['nodes'][0, :] #index order is Z, Y, X
+		self.stepsize = collect_param['stepsize'][0, :] #index order is Z, Y, X
+		self.mincoord = collect_param['min'][0, :] #index order is Z, Y, X
+		self.maxcoord = collect_param['max'][0, :] #index order is Z, Y, X
 		
 		splitted = line.split(' ')
 		self.binary_value = int(splitted[4].strip('\n'))
 		
 		#we are in position for reading the binary data
-		tot_data = 1 + self.valuedim*np.prod(self.nodes)
+		tot_data = self.valuedim*np.prod(self.nodes)
 		type_selected = type_tuple[int(self.binary_value/type_min) - 1]
-		data_stream = np.fromfile(f, dtype=type_selected, count=tot_data)
+		data_stream = np.fromfile(f, dtype=type_selected, count=1+tot_data)
 		
 		f.close() #close the file
 		
@@ -80,10 +83,22 @@ class OVF_File:
 		self.z_values = np.zeros(self.nodes, dtype=type_selected) #index order is Z, Y, X
 		self.y_values = np.zeros(self.nodes, dtype=type_selected) #index order is Z, Y, X
 		self.x_values = np.zeros(self.nodes, dtype=type_selected) #index order is Z, Y, X
-		#if self.valuedim == 3:
-			#a = 1
-		#elif self.valuedim == 1:
-			#a = 1
-		#else:
-			#raise RuntimeError('Wrong number of components')
-			#return None
+		if self.valuedim == 3:
+			counter = 1 #first data is the byte order check
+			for i in range(self.nodes[0]):
+				for j in range(self.nodes[1]):
+					for k in range(self.nodes[2]):
+						self.x_values[i, j, k] = data_stream[counter]
+						self.y_values[i, j, k] = data_stream[counter + 1]
+						self.z_values[i, j, k] = data_stream[counter + 2]
+						counter += 3
+		elif self.valuedim == 1:
+			counter = 1 #first data is the byte order check
+			for i in range(self.nodes[0]):
+				for j in range(self.nodes[1]):
+					for k in range(self.nodes[2]):
+						self.x_values[i, j, k] = data_stream[counter] #scalar data will appear in 'x_values'
+						counter += 1
+		else:
+			raise RuntimeError('Wrong number of components')
+			return None
