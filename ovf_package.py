@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import h5py
 
 type_tuple = (np.float32, np.float64)
 type_min = 4
@@ -9,6 +11,7 @@ param_tuple = ('valuedim','nodes','stepsize','min','max')
 class OVF_File:
 
 	#CONSTRUCTOR
+	
 	def __init__(self, fname, quantity):
 		self.fname = fname
 		self.quantity = quantity #'m' for magnetization; 'h' for field
@@ -102,3 +105,52 @@ class OVF_File:
 		else:
 			raise RuntimeError('Wrong number of components')
 			return None
+	
+	#----- METHODS -----
+	
+	def mod(self):
+		return np.sqrt(self.x_values**2 + self.y_values**2 + self.z_values**2)
+	
+	def plotXY(self, comp, z_slice):
+		if comp == 'x':
+			values_to_plot = self.x_values[z_slice, :, :]
+		elif comp == 'y':
+			values_to_plot = self.y_values[z_slice, :, :]
+		elif comp == 'z':
+			values_to_plot = self.z_values[z_slice, :, :]
+		elif comp == 'm':
+			values_to_plot = self.mod()[z_slice, :, :]
+		
+		mySize = 18
+		fig = plt.figure(figsize=(10, 10))
+		ax = fig.add_subplot(1,1,1)
+		cmesh = ax.pcolormesh(self.x_axis, self.y_axis, values_to_plot)
+		ax.axis('image')
+		plt.colorbar(cmesh)
+		ax.tick_params(axis='both', labelsize=mySize)
+		ax.set_xlabel('x (nm)', fontsize=mySize)
+		ax.set_ylabel('y (nm)', fontsize=mySize)
+		ax.grid(True)
+		plt.tight_layout()
+		plt.show()
+
+#-------------------- Functions --------------------
+
+#Save data to HDF5 file (not part of the OVF_File class)
+def save(obj, output_name):
+	f = h5py.File(output_name, 'a')
+	f.create_dataset('x_axis', data=obj.x_axis)
+	f.create_dataset('y_axis', data=obj.y_axis)
+	f.create_dataset('z_axis', data=obj.z_axis)
+	f.create_dataset('x_values', data=obj.x_values)
+	f.create_dataset('y_values', data=obj.y_values)
+	f.create_dataset('z_values', data=obj.z_values)
+	f.create_dataset('fname', data=obj.fname)
+	f.create_dataset('quantity', data=obj.quantity)
+	f.create_dataset('binary_value', data=obj.binary_value)
+	f.create_dataset('valuedim', data=obj.valuedim)
+	f.create_dataset('nodes', data=obj.nodes)
+	f.create_dataset('stepsize', data=obj.stepsize)
+	f.create_dataset('mincoord', data=obj.mincoord)
+	f.create_dataset('maxcoord', data=obj.maxcoord)
+	f.close()
