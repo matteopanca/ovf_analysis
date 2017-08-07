@@ -14,6 +14,7 @@ class OVF_File:
 	
 	def __init__(self, fname, quantity, mult_coeff=0):
 		type_min = 4
+		inType_tuple = (np.float32, np.float64)
 		param_tuple = ('valuedim', 'nodes', 'stepsize', 'min', 'max', 'Total simulation')
 		
 		self.fname = fname
@@ -76,8 +77,8 @@ class OVF_File:
 		
 		#we are in position for reading the binary data
 		tot_data = self.valuedim*np.prod(self.nodes)
-		type_selected = type_tuple[int(self.binary_value/type_min) - 1]
-		data_stream = np.fromfile(f, dtype=type_selected, count=1+tot_data)
+		type_index = int(self.binary_value/type_min) - 1
+		data_stream = np.fromfile(f, dtype=type_tuple[type_index], count=1+tot_data)
 		
 		f.close() #close the file
 		
@@ -95,13 +96,13 @@ class OVF_File:
 		if mult_coeff != 0:
 			data_stream *= mult_coeff
 		
-		self.z_axis = self.mincoord[0] + self.stepsize[0]*np.arange(0, self.nodes[0], 1, dtype=np.float_)
-		self.y_axis = self.mincoord[1] + self.stepsize[1]*np.arange(0, self.nodes[1], 1, dtype=np.float_)
-		self.x_axis = self.mincoord[2] + self.stepsize[2]*np.arange(0, self.nodes[2], 1, dtype=np.float_)
+		self.z_axis = self.mincoord[0] + self.stepsize[0]*np.arange(0, self.nodes[0], 1, dtype=inType_tuple[type_index])
+		self.y_axis = self.mincoord[1] + self.stepsize[1]*np.arange(0, self.nodes[1], 1, dtype=inType_tuple[type_index])
+		self.x_axis = self.mincoord[2] + self.stepsize[2]*np.arange(0, self.nodes[2], 1, dtype=inType_tuple[type_index])
 		
-		self.z_values = np.zeros(self.nodes, dtype=np.float_) #index order is Z, Y, X
-		self.y_values = np.zeros(self.nodes, dtype=np.float_) #index order is Z, Y, X
-		self.x_values = np.zeros(self.nodes, dtype=np.float_) #index order is Z, Y, X
+		self.z_values = np.zeros(self.nodes, dtype=inType_tuple[type_index]) #index order is Z, Y, X
+		self.y_values = np.zeros(self.nodes, dtype=inType_tuple[type_index]) #index order is Z, Y, X
+		self.x_values = np.zeros(self.nodes, dtype=inType_tuple[type_index]) #index order is Z, Y, X
 		if self.valuedim == 3:
 			counter = 1 #first data is the byte order check
 			for i in range(self.nodes[0]):
@@ -201,8 +202,8 @@ class OVF_File:
 #-------------------- Functions --------------------
 
 #Save data to HDF5 file (not part of the OVF_File class)
-def save(obj, output_name):
-	f = h5py.File(output_name, 'a')
+def save_h5(obj, output_name):
+	f = h5py.File(output_name+'.hdf5', 'a')
 	f.create_dataset('x_axis', data=obj.x_axis)
 	f.create_dataset('y_axis', data=obj.y_axis)
 	f.create_dataset('z_axis', data=obj.z_axis)
