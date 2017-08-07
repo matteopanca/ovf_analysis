@@ -193,6 +193,7 @@ class OVF_File:
 		if axis_image:
 			ax.axis('image')
 		ax.tick_params(axis='both', labelsize=mySize)
+		ax.set_title(comp[2]+'-Component', fontsize=mySize)
 		ax.set_xlabel(x_label+' (nm)', fontsize=mySize)
 		ax.set_ylabel(y_label+' (nm)', fontsize=mySize)
 		ax.grid(True)
@@ -203,7 +204,7 @@ class OVF_File:
 
 #Save data to HDF5 file (not part of the OVF_File class)
 def save_h5(obj, output_name):
-	f = h5py.File(output_name+'.hdf5', 'a')
+	f = h5py.File(output_name+'.hdf5', 'w')
 	f.create_dataset('x_axis', data=obj.x_axis)
 	f.create_dataset('y_axis', data=obj.y_axis)
 	f.create_dataset('z_axis', data=obj.z_axis)
