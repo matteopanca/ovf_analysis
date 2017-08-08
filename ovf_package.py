@@ -31,11 +31,12 @@ class OVF_File:
 		if '1' in line:
 			self.ovf_version = 1
 			type_tuple = ('>f4', '>f8')
-			collect_param['valuedim'][0] = 3 #OVF V1 only for vector data
+			collect_param['valuedim'][0] = 3 #only vector data for OVF V1 
 		elif '2' in line:
 			self.ovf_version = 2
 			type_tuple = ('<f4', '<f8')
 		else:
+			f.close() #close the file
 			raise RuntimeError('Not valid OVF version')
 			return None
 		
@@ -137,13 +138,19 @@ class OVF_File:
 		mod_map = self.mod()
 		return np.greater(mod_map, np.amax(mod_map)/10.) #is 10 an acceptable value for filtering?
 	
+	def not_mask(self):
+		mod_map = self.mod()
+		return np.less(mod_map, np.amax(mod_map)/10.) #is 10 an acceptable value for filtering?
+	
 	def plot(self, comp, slice, limits=None):
+		useful_mask = self.not_mask()
 		if comp[0:2] == 'xy' or comp[0:2] == 'yx':
 			axis_image = True
 			x_to_plot = self.x_axis
 			x_label = 'x'
 			y_to_plot = self.y_axis
 			y_label = 'y'
+			useful_mask = useful_mask[slice, :, :]
 			if comp[2] == 'x':
 				values_to_plot = self.x_values[slice, :, :]
 			elif comp[2] == 'y':
@@ -158,6 +165,7 @@ class OVF_File:
 			x_label = 'x'
 			y_to_plot = self.z_axis
 			y_label = 'z'
+			useful_mask = useful_mask[:, slice, :]
 			if comp[2] == 'x':
 				values_to_plot = self.x_values[:, slice, :]
 			elif comp[2] == 'y':
@@ -172,6 +180,7 @@ class OVF_File:
 			x_label = 'y'
 			y_to_plot = self.z_axis
 			y_label = 'z'
+			useful_mask = useful_mask[:, :, slice]
 			if comp[2] == 'x':
 				values_to_plot = self.x_values[:, :, slice]
 			elif comp[2] == 'y':
@@ -180,7 +189,9 @@ class OVF_File:
 				values_to_plot = self.z_values[:, :, slice]
 			elif comp[2] == 'm':
 				values_to_plot = self.mod()[:, :, slice]
-				
+		
+		values_to_plot = np.ma.masked_array(values_to_plot, useful_mask) #masked array to be plotted
+		
 		mySize = 18
 		fig = plt.figure(figsize=(10, 10))
 		ax = fig.add_subplot(1,1,1)
