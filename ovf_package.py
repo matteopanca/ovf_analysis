@@ -101,27 +101,31 @@ class OVF_File:
 		self.y_axis = self.mincoord[1] + self.stepsize[1]*np.arange(0, self.nodes[1], 1, dtype=inType_tuple[type_index])
 		self.x_axis = self.mincoord[2] + self.stepsize[2]*np.arange(0, self.nodes[2], 1, dtype=inType_tuple[type_index])
 		
-		self.z_values = np.zeros(self.nodes, dtype=inType_tuple[type_index]) #index order is Z, Y, X
-		self.y_values = np.zeros(self.nodes, dtype=inType_tuple[type_index]) #index order is Z, Y, X
-		self.x_values = np.zeros(self.nodes, dtype=inType_tuple[type_index]) #index order is Z, Y, X
+		#self.z_values = np.zeros(self.nodes, dtype=inType_tuple[type_index]) #index order is Z, Y, X
+		#self.y_values = np.zeros(self.nodes, dtype=inType_tuple[type_index]) #index order is Z, Y, X
+		#self.x_values = np.zeros(self.nodes, dtype=inType_tuple[type_index]) #index order is Z, Y, X
 		if self.valuedim == 3:
-			counter = 1 #first data is the byte order check
-			for i in range(self.nodes[0]):
-				for j in range(self.nodes[1]):
-					for k in range(self.nodes[2]):
-						self.x_values[i, j, k] = data_stream[counter]
-						self.y_values[i, j, k] = data_stream[counter + 1]
-						self.z_values[i, j, k] = data_stream[counter + 2]
-						counter += 3
+			self.x_values = np.reshape(data_stream[1::3], self.nodes, order='C')
+			self.y_values = np.reshape(data_stream[2::3], self.nodes, order='C')
+			self.z_values = np.reshape(data_stream[3::3], self.nodes, order='C')
+			#counter = 1 #first data is the byte order check
+			#for i in range(self.nodes[0]):
+				#for j in range(self.nodes[1]):
+					#for k in range(self.nodes[2]):
+						#self.x_values[i, j, k] = data_stream[counter]
+						#self.y_values[i, j, k] = data_stream[counter + 1]
+						#self.z_values[i, j, k] = data_stream[counter + 2]
+						#counter += 3
 		elif self.valuedim == 1:
-			self.y_values = []
-			self.z_values = []
-			counter = 1 #first data is the byte order check
-			for i in range(self.nodes[0]):
-				for j in range(self.nodes[1]):
-					for k in range(self.nodes[2]):
-						self.x_values[i, j, k] = data_stream[counter] #scalar data will appear in 'x_values'
-						counter += 1
+			self.x_values = np.reshape(data_stream[1:], self.nodes, order='C')
+			#self.y_values = []
+			#self.z_values = []
+			#counter = 1 #first data is the byte order check
+			#for i in range(self.nodes[0]):
+				#for j in range(self.nodes[1]):
+					#for k in range(self.nodes[2]):
+						#self.x_values[i, j, k] = data_stream[counter] #scalar data will appear in 'x_values'
+						#counter += 1
 		else:
 			raise RuntimeError('Wrong number of components')
 			return None
