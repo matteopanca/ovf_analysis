@@ -146,7 +146,7 @@ class OVF_File:
 		mod_map = self.mod()
 		return np.less(mod_map, np.amax(mod_map)/10.) #is 10 an acceptable value for filtering?
 	
-	def plot(self, comp, slice, limits=None):
+	def plot(self, comp, slice, cblimits=None, axlimits=None):
 		useful_mask = self.not_mask()
 		if comp[0:2] == 'xy' or comp[0:2] == 'yx':
 			axis_image = True
@@ -196,14 +196,22 @@ class OVF_File:
 		
 		values_to_plot = np.ma.masked_array(values_to_plot, useful_mask) #masked array to be plotted
 		
+		if axlimits != None:
+			x_subRange = np.logical_and(x_to_plot >= axlimits[0], x_to_plot <= axlimits[1])
+			y_subRange = np.logical_and(y_to_plot >= axlimits[2], y_to_plot <= axlimits[3])
+			x_to_plot = x_to_plot[x_subRange]
+			y_to_plot = y_to_plot[y_subRange]
+			values_to_plot = values_to_plot[:, x_subRange]
+			values_to_plot = values_to_plot[y_subRange, :]
+		
 		mySize = 18
 		fig = plt.figure(figsize=(10, 10))
 		ax = fig.add_subplot(1,1,1)
-		if limits == None:
+		if cblimits == None:
 			cmesh = ax.pcolormesh(x_to_plot, y_to_plot, values_to_plot)
 			plt.colorbar(cmesh)
 		else:
-			cmesh = ax.pcolormesh(x_to_plot, y_to_plot, values_to_plot, vmin=limits[0], vmax=limits[1])
+			cmesh = ax.pcolormesh(x_to_plot, y_to_plot, values_to_plot, vmin=cblimits[0], vmax=cblimits[1])
 			plt.colorbar(cmesh, extend='both')
 		if axis_image:
 			ax.axis('image')
