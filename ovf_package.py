@@ -24,7 +24,8 @@ class OVF_File:
 		self.stepsize = np.zeros(3, dtype=np.float_)
 		self.mincoord = np.zeros(3, dtype=np.float_)
 		self.maxcoord = np.zeros(3, dtype=np.float_)
-		self.index = 0 #not always used, but sometimes useful
+		self.index = -1 #not always used, but sometimes useful
+		self.ok = False
 		
 		f = open(fname, 'rb') #open the file
 		line = f.readline().decode() #OVF version is in first line
@@ -37,7 +38,7 @@ class OVF_File:
 			type_tuple = ('<f4', '<f8')
 		else:
 			f.close() #close the file
-			raise RuntimeError('Not valid OVF version')
+			#raise RuntimeError('Not valid OVF version')
 			return None
 		
 		while not('# Begin: Data' in line): #parsing the lines
@@ -129,8 +130,13 @@ class OVF_File:
 		else:
 			raise RuntimeError('Wrong number of components')
 			return None
+		
+		self.ok = True
 	
 	#----- METHODS -----
+	
+	def set_index(self, i):
+		self.index = i
 	
 	def mod(self):
 		return np.sqrt(self.x_values**2 + self.y_values**2 + self.z_values**2)
