@@ -259,17 +259,11 @@ class OVF_File:
 
 #Save multiple data to HDF5 file (not part of the OVF_File class)
 #"obj" have to be an object compatible with the "len()" method
-def save_h5(obj, output_name, exist_flag=False):
+#"file_mode" have to be 'w' (default) or 'a'
+def save_h5(obj, output_name, file_mode='w'):
 	n_maps = len(obj)
-	if exist_flag:
-		f = h5py.File(output_name+'.hdf5', 'a')
-		start_index = f['n_maps'].value
-		del f['n_maps']
-		f.create_dataset('n_maps', data=start_index+n_maps)
-	else:
-		f = h5py.File(output_name+'.hdf5', 'w')
-		f.create_dataset('n_maps', data=n_maps)
-		start_index = 0
+	f = h5py.File(output_name+'.hdf5', file_mode)
+	start_index = len(f.keys())
 	
 	for i in range(n_maps):
 		basename = 'map{:06d}/'.format(start_index+i) #1000000 groups should be enough
@@ -297,7 +291,7 @@ def save_h5(obj, output_name, exist_flag=False):
 #"read_range" have to be an object compatible with the "len()" method
 def open_h5(input_name, read_range=[]):
 	f = h5py.File(input_name+'.hdf5', 'r')
-	n_maps = f['n_maps'].value
+	n_maps = len(f.keys())
 	if len(read_range) == 0:
 		start_index = 0
 		stop_index = n_maps
