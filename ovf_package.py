@@ -231,24 +231,38 @@ class OVF_File:
 
 #-------------------- Functions --------------------
 
-#Save data to HDF5 file (not part of the OVF_File class)
-def save_h5(obj, output_name):
-	f = h5py.File(output_name+'.hdf5', 'w')
-	f.create_dataset('x_axis', data=obj.x_axis)
-	f.create_dataset('y_axis', data=obj.y_axis)
-	f.create_dataset('z_axis', data=obj.z_axis)
-	f.create_dataset('x_values', data=obj.x_values)
-	if obj.valuedim == 3:
-		f.create_dataset('y_values', data=obj.y_values)
-		f.create_dataset('z_values', data=obj.z_values)
-	f.create_dataset('fname', data=obj.fname)
-	f.create_dataset('quantity', data=obj.quantity)
-	f.create_dataset('binary_value', data=obj.binary_value)
-	f.create_dataset('valuedim', data=obj.valuedim)
-	f.create_dataset('t', data=obj.t)
-	f.create_dataset('index', data=obj.index)
-	f.create_dataset('nodes', data=obj.nodes)
-	f.create_dataset('stepsize', data=obj.stepsize)
-	f.create_dataset('mincoord', data=obj.mincoord)
-	f.create_dataset('maxcoord', data=obj.maxcoord)
+#Save multiple data to HDF5 file (not part of the OVF_File class)
+#"obj" have to be an object compatible with the "len()" method
+def save_h5(obj, output_name, exist_flag=False):
+	n_maps = len(obj)
+	if exist_flag:
+		f = h5py.File(output_name+'.hdf5', 'a')
+		starting_index = f['n_maps'].value
+		del f['n_maps']
+		f.create_dataset('n_maps', data=starting_index+n_maps)
+	else:
+		f = h5py.File(output_name+'.hdf5', 'w')
+		f.create_dataset('n_maps', data=n_maps)
+		starting_index = 0
+	
+	for i in range(n_maps):
+		basename = 'map{:06d}/'.format(starting_index+i) #1000000 groups should be enough
+		f.create_dataset(basename+'x_axis', data=obj[i].x_axis)
+		f.create_dataset(basename+'y_axis', data=obj[i].y_axis)
+		f.create_dataset(basename+'z_axis', data=obj[i].z_axis)
+		f.create_dataset(basename+'x_values', data=obj[i].x_values)
+		if obj[i].valuedim == 3:
+			f.create_dataset(basename+'y_values', data=obj[i].y_values)
+			f.create_dataset(basename+'z_values', data=obj[i].z_values)
+		f.create_dataset(basename+'fname', data=obj[i].fname)
+		f.create_dataset(basename+'quantity', data=obj[i].quantity)
+		f.create_dataset(basename+'binary_value', data=obj[i].binary_value)
+		f.create_dataset(basename+'valuedim', data=obj[i].valuedim)
+		f.create_dataset(basename+'t', data=obj[i].t)
+		f.create_dataset(basename+'index', data=obj[i].index)
+		f.create_dataset(basename+'nodes', data=obj[i].nodes)
+		f.create_dataset(basename+'stepsize', data=obj[i].stepsize)
+		f.create_dataset(basename+'mincoord', data=obj[i].mincoord)
+		f.create_dataset(basename+'maxcoord', data=obj[i].maxcoord)
+		print('Map {:d} saved'.format(i))
 	f.close()
