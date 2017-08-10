@@ -222,7 +222,7 @@ class OVF_File:
 		if axis_image:
 			ax.axis('image')
 		ax.tick_params(axis='both', labelsize=mySize)
-		ax.set_title(comp[2]+'-Component', fontsize=mySize)
+		ax.set_title(comp[2]+'-Component - Slice {:d}'.format(slice), fontsize=mySize)
 		ax.set_xlabel(x_label+' (nm)', fontsize=mySize)
 		ax.set_ylabel(y_label+' (nm)', fontsize=mySize)
 		ax.grid(True)
