@@ -12,7 +12,13 @@ class OVF_File:
 
 	#----- CONSTRUCTOR -----
 	
-	def __init__(self, fname, quantity, mult_coeff=0):
+	def __init__(self, fname, quantity='', mult_coeff=0):
+		if type(fname) == str:
+			return self.from_ovf(fname, quantity, mult_coeff)
+		else:
+			return self.from_h5(fname)
+	
+	def from_ovf(self, fname, quantity, mult_coeff=0):
 		type_min = 4
 		inType_tuple = (np.float32, np.float64)
 		param_tuple = ('valuedim', 'nodes', 'stepsize', 'min', 'max', 'Total simulation')
@@ -133,6 +139,26 @@ class OVF_File:
 		
 		self.ok = True
 	
+	def from_h5(self, group):
+		self.valuedim = group.get('valuedim').value
+		self.x_axis = group.get('x_axis').value
+		self.y_axis = group.get('y_axis').value
+		self.z_axis = group.get('z_axis').value
+		self.x_values = group.get('x_values').value
+		if self.valuedim == 3:
+			self.y_values = group.get('y_values').value
+			self.z_values = group.get('z_values').value
+		self.fname = group.get('fname').value
+		self.quantity = group.get('quantity').value
+		self.binary_value = group.get('binary_value').value
+		self.t = group.get('t').value
+		self.index = group.get('index').value
+		self.nodes = group.get('nodes').value
+		self.stepsize = group.get('stepsize').value
+		self.mincoord = group.get('mincoord').value
+		self.maxcoord = group.get('maxcoord').value
+		self.ok = True
+	
 	#----- METHODS -----
 	
 	def set_index(self, i):
@@ -237,16 +263,16 @@ def save_h5(obj, output_name, exist_flag=False):
 	n_maps = len(obj)
 	if exist_flag:
 		f = h5py.File(output_name+'.hdf5', 'a')
-		starting_index = f['n_maps'].value
+		start_index = f['n_maps'].value
 		del f['n_maps']
-		f.create_dataset('n_maps', data=starting_index+n_maps)
+		f.create_dataset('n_maps', data=start_index+n_maps)
 	else:
 		f = h5py.File(output_name+'.hdf5', 'w')
 		f.create_dataset('n_maps', data=n_maps)
-		starting_index = 0
+		start_index = 0
 	
 	for i in range(n_maps):
-		basename = 'map{:06d}/'.format(starting_index+i) #1000000 groups should be enough
+		basename = 'map{:06d}/'.format(start_index+i) #1000000 groups should be enough
 		f.create_dataset(basename+'x_axis', data=obj[i].x_axis)
 		f.create_dataset(basename+'y_axis', data=obj[i].y_axis)
 		f.create_dataset(basename+'z_axis', data=obj[i].z_axis)
@@ -266,3 +292,20 @@ def save_h5(obj, output_name, exist_flag=False):
 		f.create_dataset(basename+'maxcoord', data=obj[i].maxcoord)
 		print('Map {:d} saved'.format(i))
 	f.close()
+
+#Open HDF5 file (not part of the OVF_File class)
+#"read_range" have to be an object compatible with the "len()" method
+def open_h5(input_name, read_range=[]):
+	f = h5py.File(input_name+'.hdf5', 'r')
+	n_maps = f['n_maps'].value
+	if len(read_range) == 0:
+		start_index = 0
+		stop_index = n_maps
+	else:
+		start_index = read_range[0]
+		stop_index = min(read_range[1]+1, n_maps)
+	data = []
+	for i in range(start_index, stop_index):
+		data.append(OVF_File(f['map{:06d}/'.format(i)]))
+	f.close()
+	return data
