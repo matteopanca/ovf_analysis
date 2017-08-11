@@ -196,9 +196,10 @@ class OVF_File:
 		scalar_prod = np.ma.masked_array(scalar_prod, useful_mask) #masked array to be considered
 		if limits != None:
 			sub_range = []
+			axis = [self.z_axis, self.y_axis, self.x_axis]
 			for i in range(3):
 				if len(limits[2-i]) != 0:
-					sub_range.append(np.logical_and(self.x_axis >= limits[2-i][0], self.x_axis <= limits[2-i][1]))
+					sub_range.append(np.logical_and(axis[i] >= limits[2-i][0], axis[i] < limits[2-i][1]))
 				else:
 					sub_range.append(np.ones(self.nodes[i], dtype=bool))
 			scalar_prod = scalar_prod[sub_range[0], :, :]
@@ -262,8 +263,8 @@ class OVF_File:
 		values_to_plot = np.ma.masked_array(values_to_plot, useful_mask) #masked array to be plotted
 		
 		if axlimits != None:
-			x_subRange = np.logical_and(x_to_plot >= axlimits[0], x_to_plot <= axlimits[1])
-			y_subRange = np.logical_and(y_to_plot >= axlimits[2], y_to_plot <= axlimits[3])
+			x_subRange = np.logical_and(x_to_plot >= axlimits[0], x_to_plot < axlimits[1])
+			y_subRange = np.logical_and(y_to_plot >= axlimits[2], y_to_plot < axlimits[3])
 			x_to_plot = x_to_plot[x_subRange]
 			y_to_plot = y_to_plot[y_subRange]
 			values_to_plot = values_to_plot[:, x_subRange]
