@@ -178,6 +178,32 @@ class OVF_File:
 		mod_map = self.mod()
 		return np.less(mod_map, np.amax(mod_map)/10.) #is 10 an acceptable value for filtering?
 	
+	def max(self):
+		return np.amax(self.mod())
+	
+	#dir have to be a np.array with 3 components; limits should be a list (or tuple) of lists (or tuples)
+	def avg_comp(self, dir, limits=None):
+		norm_dir = dir/np.sqrt(np.sum(dir**2))
+		scalar_prod = norm_dir[0]*self.x_values + norm_dir[1]*self.y_values + norm_dir[2]*self.z_values
+		useful_mask = self.not_mask()
+		scalar_prod = np.ma.masked_array(scalar_prod, useful_mask) #masked array to be considered
+		if limits != None:
+			sub_range = []
+			for i in range(3):
+				if len(limits[2-i]) != 0:
+					sub_range.append(np.logical_and(self.x_axis >= limits[2-i][0], self.x_axis <= limits[2-i][1]))
+				else:
+					sub_range.append(np.ones(self.nodes[i], dtype=bool))
+			scalar_prod = scalar_prod[sub_range[0], :, :]
+			scalar_prod = scalar_prod[:, sub_range[1], :]
+			scalar_prod = scalar_prod[:, :, sub_range[2]]
+		result = np.mean(scalar_prod)
+		if result is np.ma.masked:
+			raise RuntimeError('No valid data to be averaged')
+			return 0. #useful if removing the "raise"
+		else:
+			return result
+	
 	def plot(self, comp, slice, cblimits=None, axlimits=None):
 		useful_mask = self.not_mask()
 		if comp[0:2] == 'xy' or comp[0:2] == 'yx':
