@@ -1,10 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
+import warnings
 
 mu0 = np.pi*4e-7
 OOMMFtoOe = np.pi*4e-3
 MUMAXtoOe = 1e-4
+xv = np.array([1, 0, 0])
+yv = np.array([0, 1, 0])
+zv = np.array([0, 0, 1])
 
 #-------------------- CLASS Definition --------------------
 
@@ -94,11 +98,11 @@ class OVF_File:
 		if self.binary_value == 4:
 			if data_stream[0] != 1234567.0:
 				raise RuntimeError('Error in reading the file: file corrupted')
-				return None
+				#return None #useful if removing the "raise"
 		elif self.binary_value == 8:
 			if data_stream[0] != 123456789012345.0:
 				raise RuntimeError('Error in reading the file: file corrupted')
-				return None
+				#return None #useful if removing the "raise"
 		
 		#split the data in the proper arrays
 		if mult_coeff != 0:
@@ -135,7 +139,7 @@ class OVF_File:
 						#counter += 1
 		else:
 			raise RuntimeError('Wrong number of components')
-			return None
+			#return None #useful if removing the "raise"
 		
 		self.ok = True
 	
@@ -172,16 +176,19 @@ class OVF_File:
 	
 	def mask(self):
 		mod_map = self.mod()
-		return np.greater(mod_map, np.amax(mod_map)/10.) #is 10 an acceptable value for filtering?
+		return np.greater(mod_map, 10*np.finfo(mod_map.dtype).eps) #10 times the "eps" for the considered type
 	
 	def not_mask(self):
 		mod_map = self.mod()
-		return np.less(mod_map, np.amax(mod_map)/10.) #is 10 an acceptable value for filtering?
+		return np.less(mod_map, 10*np.finfo(mod_map.dtype).eps) #10 times the "eps" for the considered type
 	
 	def max(self):
-		return np.amax(self.mod())
+		return np.amax(self.mod()[self.mask()])
 	
-	#dir have to be a np.array with 3 components; limits should be a list (or tuple) of lists (or tuples)
+	def min(self):
+		return np.amin(self.mod()[self.mask()])
+	
+	#"dir" have to be a np.array with 3 components; "limits" should be a list (or tuple) of 3 lists (or 3 tuples)
 	def avg_comp(self, dir, limits=None):
 		norm_dir = dir/np.sqrt(np.sum(dir**2))
 		scalar_prod = norm_dir[0]*self.x_values + norm_dir[1]*self.y_values + norm_dir[2]*self.z_values
@@ -199,8 +206,8 @@ class OVF_File:
 			scalar_prod = scalar_prod[:, :, sub_range[2]]
 		result = np.mean(scalar_prod)
 		if result is np.ma.masked:
-			raise RuntimeError('No valid data to be averaged')
-			return 0. #useful if removing the "raise"
+			warnings.warn('No valid data to be averaged')
+			return 0.
 		else:
 			return result
 	
