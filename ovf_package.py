@@ -374,9 +374,9 @@ def mumax3_pt(filename, col_x, col_y, n_loops=(1,0,0), ax1=None):
 	for i in range(n_loops[1], n_loops[2]+1):
 		ax1.plot(data_x[i], data_y[i], '-o', linewidth=2, label='{:d}'.format(i))
 	ax1.grid(True)
-	ax1.legend(loc='best')
+	if n_loops[0] > 1:
+		ax1.legend(loc='best')
 	plt.show()
-	
 	return ax1
 
 #Get the selected file's path in a string
