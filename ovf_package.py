@@ -347,8 +347,8 @@ def mumax3_pt(filename, col_x, col_y, n_loops=(1,0,0), ax1=None):
 		if col_x == 'i':
 			data_x_complete = np.arange(len(data_y_complete))
 	elif type(col_x) == tuple:
-		data_x_complete = np.arange(col_x[0], col_x[1]+1)
-		data_y_complete = data[col_x[0]:col_x[1]+1, col_y]
+		data_x_complete = data[col_x[1]:col_x[2]+1, col_x[0]-1]
+		data_y_complete = data[col_x[1]:col_x[2]+1, col_y]
 	else:
 		if col_x > 0:
 			col_x -= 1
@@ -360,8 +360,8 @@ def mumax3_pt(filename, col_x, col_y, n_loops=(1,0,0), ax1=None):
 	data_x = []
 	data_y = []
 	for i in range(n_loops[0]):
-		data_x.append(data_x_complete[i*points_per_loop:(i+1)*points_per_loop-1])
-		data_y.append(data_y_complete[i*points_per_loop:(i+1)*points_per_loop-1])
+		data_x.append(data_x_complete[i*points_per_loop:(i+1)*points_per_loop])
+		data_y.append(data_y_complete[i*points_per_loop:(i+1)*points_per_loop])
 	
 	if ax1 == None:
 		fig = plt.figure(figsize=(16,9))
