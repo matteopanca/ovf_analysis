@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 import warnings
+#import tkinter as tk
+from tkinter import filedialog
 
 mu0 = np.pi*4e-7
 OOMMFtoOe = np.pi*4e-3
@@ -339,18 +341,21 @@ def open_h5(input_name, read_range=[]):
 	return data
 
 #Read MuMax3 ASCII table ("pt" stands for "plot table")
+#Column index starts form 1 (but neither the data nor the row index)
 def mumax3_pt(filename, col_x, col_y, n_loops=(1,0,0), ax1=None):
 	data = np.genfromtxt(filename, skip_header=1)
 	col_y -= 1
-	data_y_complete = data[:, col_y]
-	if type(col_x) == str:
-		if col_x == 'i':
-			data_x_complete = np.arange(len(data_y_complete))
-	elif type(col_x) == tuple:
-		data_x_complete = data[col_x[1]:col_x[2]+1, col_x[0]-1]
+	if type(col_x) == tuple:
+		if col_x[0] == 'i':
+			data_x_complete = np.arange(col_x[1], col_x[2]+1)
+		else:
+			data_x_complete = data[col_x[1]:col_x[2]+1, col_x[0]-1]
 		data_y_complete = data[col_x[1]:col_x[2]+1, col_y]
 	else:
-		if col_x > 0:
+		data_y_complete = data[:, col_y]
+		if col_x == 'i':
+			data_x_complete = np.arange(len(data_y_complete))
+		elif col_x > 0:
 			col_x -= 1
 			data_x_complete = data[:, col_x]
 		else:
@@ -373,3 +378,9 @@ def mumax3_pt(filename, col_x, col_y, n_loops=(1,0,0), ax1=None):
 	plt.show()
 	
 	return ax1
+
+#Get the selected file's path in a string
+def get_path(start_path=''):
+	#root = tk.Tk() #hide the root window - is it needed?
+	#root.withdraw() #hide the root window - is it needed?
+	return filedialog.askopenfilename(initialdir=start_path, title='Select input file', filetypes=(('All files', '*'),))
