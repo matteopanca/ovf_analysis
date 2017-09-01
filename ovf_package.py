@@ -337,3 +337,39 @@ def open_h5(input_name, read_range=[]):
 		data.append(OVF_File(f['map{:06d}/'.format(i)]))
 	f.close()
 	return data
+
+#Read MuMax3 ASCII table ("pt" stands for "plot table")
+def mumax3_pt(filename, col_x, col_y, n_loops=(1,0,0), ax1=None):
+	data = np.genfromtxt(filename, skip_header=1)
+	col_y -= 1
+	data_y_complete = data[:, col_y]
+	if type(col_x) == str:
+		if col_x == 'i':
+			data_x_complete = np.arange(len(data_y_complete))
+	elif type(col_x) == tuple:
+		data_x_complete = np.arange(col_x[0], col_x[1]+1)
+		data_y_complete = data[col_x[0]:col_x[1]+1, col_y]
+	else:
+		if col_x > 0:
+			col_x -= 1
+			data_x_complete = data[:, col_x]
+		else:
+			start_col = np.abs(col_x) - 1
+			data_x_complete = np.sqrt(data[:, start_col]**2 + data[:, start_col+1]**2 + data[:, start_col+2]**2)
+	points_per_loop = int(np.round(len(data_x_complete)/n_loops[0]))
+	data_x = []
+	data_y = []
+	for i in range(n_loops[0]):
+		data_x.append(data_x_complete[i*points_per_loop:(i+1)*points_per_loop-1])
+		data_y.append(data_y_complete[i*points_per_loop:(i+1)*points_per_loop-1])
+	
+	if ax1 == None:
+		fig = plt.figure(figsize=(16,9))
+		ax1 = fig.add_subplot(1,1,1)
+	for i in range(n_loops[1], n_loops[2]+1):
+		ax1.plot(data_x[i], data_y[i], '-o', linewidth=2, label='{:d}'.format(i))
+	ax1.grid(True)
+	ax1.legend(loc='best')
+	plt.show()
+	
+	return ax1
