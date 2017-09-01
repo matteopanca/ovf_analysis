@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 import warnings
-#import tkinter as tk
+import tkinter as tk
 from tkinter import filedialog
 
 mu0 = np.pi*4e-7
@@ -381,6 +381,6 @@ def mumax3_pt(filename, col_x, col_y, n_loops=(1,0,0), ax1=None):
 
 #Get the selected file's path in a string
 def get_path(start_path=''):
-	#root = tk.Tk() #hide the root window - is it needed?
-	#root.withdraw() #hide the root window - is it needed?
+	root = tk.Tk() #hide the root window
+	root.withdraw() #hide the root window
 	return filedialog.askopenfilename(initialdir=start_path, title='Select input file', filetypes=(('All files', '*'),))
