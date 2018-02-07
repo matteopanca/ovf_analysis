@@ -110,9 +110,12 @@ class OVF_File:
 		if mult_coeff != 0:
 			data_stream *= mult_coeff
 		
-		self.z_axis = self.mincoord[0] + self.stepsize[0]*np.arange(0, self.nodes[0], 1, dtype=inType_tuple[type_index])
-		self.y_axis = self.mincoord[1] + self.stepsize[1]*np.arange(0, self.nodes[1], 1, dtype=inType_tuple[type_index])
-		self.x_axis = self.mincoord[2] + self.stepsize[2]*np.arange(0, self.nodes[2], 1, dtype=inType_tuple[type_index])
+		self.z_axis_nodes = np.arange(0, self.nodes[0], 1, dtype=inType_tuple[type_index])
+		self.y_axis_nodes = np.arange(0, self.nodes[1], 1, dtype=inType_tuple[type_index])
+		self.x_axis_nodes = np.arange(0, self.nodes[2], 1, dtype=inType_tuple[type_index])
+		self.z_axis = self.mincoord[0] + self.stepsize[0]*self.z_axis_nodes
+		self.y_axis = self.mincoord[1] + self.stepsize[1]*self.y_axis_nodes
+		self.x_axis = self.mincoord[2] + self.stepsize[2]*self.x_axis_nodes
 		
 		#self.z_values = np.zeros(self.nodes, dtype=inType_tuple[type_index]) #index order is Z, Y, X
 		#self.y_values = np.zeros(self.nodes, dtype=inType_tuple[type_index]) #index order is Z, Y, X
@@ -150,6 +153,9 @@ class OVF_File:
 		self.x_axis = group.get('x_axis').value
 		self.y_axis = group.get('y_axis').value
 		self.z_axis = group.get('z_axis').value
+		self.x_axis_nodes = group.get('x_axis_nodes').value
+		self.y_axis_nodes = group.get('y_axis_nodes').value
+		self.z_axis_nodes = group.get('z_axis_nodes').value
 		self.x_values = group.get('x_values').value
 		if self.valuedim == 3:
 			self.y_values = group.get('y_values').value
@@ -214,13 +220,17 @@ class OVF_File:
 		else:
 			return result
 	
-	def plot(self, comp, slice, cblimits=None, axlimits=None):
+	def plot(self, comp, slice, use_nodes=False, cblimits=None, axlimits=None):
 		useful_mask = self.not_mask()
 		if comp[0:2] == 'xy' or comp[0:2] == 'yx':
 			axis_image = True
-			x_to_plot = self.x_axis
+			if use_nodes:
+				x_to_plot = self.x_axis_nodes
+				y_to_plot = self.y_axis_nodes
+			else:
+				x_to_plot = self.x_axis
+				y_to_plot = self.y_axis
 			x_label = 'x'
-			y_to_plot = self.y_axis
 			y_label = 'y'
 			useful_mask = useful_mask[slice, :, :]
 			if comp[2] == 'x':
@@ -233,9 +243,13 @@ class OVF_File:
 				values_to_plot = self.mod()[slice, :, :]
 		elif comp[0:2] == 'xz' or comp[0:2] == 'zx':
 			axis_image = False
-			x_to_plot = self.x_axis
+			if use_nodes:
+				x_to_plot = self.x_axis_nodes
+				y_to_plot = self.z_axis_nodes
+			else:
+				x_to_plot = self.x_axis
+				y_to_plot = self.z_axis
 			x_label = 'x'
-			y_to_plot = self.z_axis
 			y_label = 'z'
 			useful_mask = useful_mask[:, slice, :]
 			if comp[2] == 'x':
@@ -248,9 +262,13 @@ class OVF_File:
 				values_to_plot = self.mod()[:, slice, :]
 		elif comp[0:2] == 'yz' or comp[0:2] == 'zy':
 			axis_image = False
-			x_to_plot = self.y_axis
+			if use_nodes:
+				x_to_plot = self.y_axis_nodes
+				y_to_plot = self.z_axis_nodes
+			else:
+				x_to_plot = self.y_axis
+				y_to_plot = self.z_axis
 			x_label = 'y'
-			y_to_plot = self.z_axis
 			y_label = 'z'
 			useful_mask = useful_mask[:, :, slice]
 			if comp[2] == 'x':
@@ -285,8 +303,12 @@ class OVF_File:
 			ax.axis('image')
 		ax.tick_params(axis='both', labelsize=mySize)
 		ax.set_title(comp[2]+'-Component - Slice {:d}'.format(slice), fontsize=mySize)
-		ax.set_xlabel(x_label+' (nm)', fontsize=mySize)
-		ax.set_ylabel(y_label+' (nm)', fontsize=mySize)
+		if use_nodes:
+			ax.set_xlabel(x_label, fontsize=mySize)
+			ax.set_ylabel(y_label, fontsize=mySize)
+		else:
+			ax.set_xlabel(x_label+' (nm)', fontsize=mySize)
+			ax.set_ylabel(y_label+' (nm)', fontsize=mySize)
 		ax.grid(True)
 		plt.tight_layout()
 		plt.show()
@@ -306,6 +328,9 @@ def save_h5(obj, output_name, file_mode='w'):
 		f.create_dataset(basename+'x_axis', data=obj[i].x_axis)
 		f.create_dataset(basename+'y_axis', data=obj[i].y_axis)
 		f.create_dataset(basename+'z_axis', data=obj[i].z_axis)
+		f.create_dataset(basename+'x_axis_nodes', data=obj[i].x_axis_nodes)
+		f.create_dataset(basename+'y_axis_nodes', data=obj[i].y_axis_nodes)
+		f.create_dataset(basename+'z_axis_nodes', data=obj[i].z_axis_nodes)
 		f.create_dataset(basename+'x_values', data=obj[i].x_values)
 		if obj[i].valuedim == 3:
 			f.create_dataset(basename+'y_values', data=obj[i].y_values)
