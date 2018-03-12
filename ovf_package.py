@@ -405,7 +405,7 @@ def mumax3_pt(filename, col_x, col_y, n_lines=-1, n_loops=(1,0,0), ax1=None):
 	if n_loops[0] > 1:
 		ax1.legend(loc='best')
 	plt.show()
-	return ax1
+	return (ax1, data_x, data_y)
 
 #Get the selected file's path in a string
 def get_path(start_path=''):
