@@ -367,8 +367,11 @@ def open_h5(input_name, read_range=[]):
 
 #Read MuMax3 ASCII table ("pt" stands for "plot table")
 #Column index starts form 1 (but neither the data nor the row index)
-def mumax3_pt(filename, col_x, col_y, n_loops=(1,0,0), ax1=None):
-	data = np.genfromtxt(filename, skip_header=1)
+def mumax3_pt(filename, col_x, col_y, n_lines=-1, n_loops=(1,0,0), ax1=None):
+	if n_lines > 0:
+		data = np.genfromtxt(filename, skip_header=1, max_rows=n_lines)
+	else:
+		data = np.genfromtxt(filename, skip_header=1)
 	col_y -= 1
 	if type(col_x) == tuple:
 		if col_x[0] == 'i':
