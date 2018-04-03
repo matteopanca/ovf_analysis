@@ -408,7 +408,7 @@ def mumax3_pt(filename, col_x, col_y, n_lines=-1, n_loops=(1,0,0), ax1=None):
 	return (ax1, data_x, data_y)
 
 #Get the selected file's path in a string
-def get_path(start_path=''):
+def get_path(start_path='', filter=(('All files', '*'),)):
 	root = tk.Tk() #hide the root window
 	root.withdraw() #hide the root window
-	return filedialog.askopenfilename(initialdir=start_path, title='Select input file', filetypes=(('All files', '*'),))
+	return filedialog.askopenfilename(initialdir=start_path, title='Select input file', filetypes=filter)
