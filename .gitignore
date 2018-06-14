@@ -1,4 +1,5 @@
 __pycache__/
 *.o*f
 *.hdf5
+*.nb
 test*.py
