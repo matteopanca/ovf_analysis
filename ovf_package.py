@@ -227,9 +227,13 @@ class OVF_File:
 			if use_nodes:
 				x_to_plot = self.x_axis_nodes
 				y_to_plot = self.y_axis_nodes
+				delta_x = 1
+				delta_y = 1
 			else:
 				x_to_plot = self.x_axis
 				y_to_plot = self.y_axis
+				delta_x = self.stepsize[2]
+				delta_y = self.stepsize[1]
 			x_label = 'x'
 			y_label = 'y'
 			useful_mask = useful_mask[slice, :, :]
@@ -246,9 +250,13 @@ class OVF_File:
 			if use_nodes:
 				x_to_plot = self.x_axis_nodes
 				y_to_plot = self.z_axis_nodes
+				delta_x = 1
+				delta_y = 1
 			else:
 				x_to_plot = self.x_axis
 				y_to_plot = self.z_axis
+				delta_x = self.stepsize[2]
+				delta_y = self.stepsize[0]
 			x_label = 'x'
 			y_label = 'z'
 			useful_mask = useful_mask[:, slice, :]
@@ -265,9 +273,13 @@ class OVF_File:
 			if use_nodes:
 				x_to_plot = self.y_axis_nodes
 				y_to_plot = self.z_axis_nodes
+				delta_x = 1
+				delta_y = 1
 			else:
 				x_to_plot = self.y_axis
 				y_to_plot = self.z_axis
+				delta_x = self.stepsize[1]
+				delta_y = self.stepsize[0]
 			x_label = 'y'
 			y_label = 'z'
 			useful_mask = useful_mask[:, :, slice]
@@ -294,10 +306,10 @@ class OVF_File:
 		fig = plt.figure(figsize=(10, 10))
 		ax = fig.add_subplot(1,1,1)
 		if cblimits == None:
-			cmesh = ax.pcolormesh(x_to_plot, y_to_plot, values_to_plot)
+			cmesh = ax.pcolormesh(np.hstack((x_to_plot, x_to_plot[-1]+delta_x)), np.hstack((y_to_plot, y_to_plot[-1]+delta_y)), values_to_plot)
 			plt.colorbar(cmesh)
 		else:
-			cmesh = ax.pcolormesh(x_to_plot, y_to_plot, values_to_plot, vmin=cblimits[0], vmax=cblimits[1])
+			cmesh = ax.pcolormesh(np.hstack((x_to_plot, x_to_plot[-1]+delta_x)), np.hstack((y_to_plot, y_to_plot[-1]+delta_y)), values_to_plot, vmin=cblimits[0], vmax=cblimits[1])
 			plt.colorbar(cmesh, extend='both')
 		if axis_image:
 			ax.axis('image')
