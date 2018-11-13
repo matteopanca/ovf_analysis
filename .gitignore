@@ -1,5 +1,5 @@
-__pycache__/
-*.o*f
-*.hdf5
+readovf/__pycache__/
 *.nb
-test*.py
+MANIFEST
+dist/
+build/
