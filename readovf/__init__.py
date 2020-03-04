@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 import warnings
-import tkinter as tk
-from tkinter import filedialog
 
 mu0 = np.pi*4e-7
 OOMMFtoOe = np.pi*4e-3
@@ -18,13 +16,13 @@ class OVF_File:
 
 	#----- CONSTRUCTOR -----
 	
-	def __init__(self, fname, quantity='', mult_coeff=0):
+	def __init__(self, fname, quantity='m', mult_coeff=0):
 		if type(fname) == str:
 			return self.from_ovf(fname, quantity, mult_coeff)
 		else:
 			return self.from_h5(fname)
 	
-	def from_ovf(self, fname, quantity, mult_coeff=0):
+	def from_ovf(self, fname, quantity, mult_coeff):
 		type_min = 4
 		inType_tuple = (np.float32, np.float64)
 		param_tuple = ('valuedim', 'nodes', 'stepsize', 'min', 'max', 'Total simulation')
@@ -418,9 +416,3 @@ def mumax3_pt(filename, col_x, col_y, n_lines=-1, n_loops=(1,0,0), ax1=None):
 		ax1.legend(loc='best')
 	plt.show()
 	return (ax1, data_x, data_y)
-
-#Get the selected file's path in a string
-def get_path(start_path='', filter=(('All files', '*'),)):
-	root = tk.Tk() #hide the root window
-	root.withdraw() #hide the root window
-	return filedialog.askopenfilename(initialdir=start_path, title='Select input file', filetypes=filter)
