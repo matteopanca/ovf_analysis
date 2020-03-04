@@ -218,7 +218,7 @@ class OVF_File:
 		else:
 			return result
 	
-	def plot(self, comp, slice, use_nodes=False, cblimits=None, axlimits=None):
+	def plot(self, comp, slice, use_nodes=False, cblimits=None, axlimits=None, figsize=(10,10)):
 		useful_mask = self.not_mask()
 		if comp[0:2] == 'xy' or comp[0:2] == 'yx':
 			axis_image = True
@@ -300,18 +300,19 @@ class OVF_File:
 			values_to_plot = values_to_plot[:, x_subRange]
 			values_to_plot = values_to_plot[y_subRange, :]
 		
-		mySize = 18
-		fig = plt.figure(figsize=(10, 10))
+		mySize = int(1.8*figsize[0])
+		fig = plt.figure(figsize=figsize)
 		ax = fig.add_subplot(1,1,1)
 		if cblimits == None:
 			cmesh = ax.pcolormesh(np.hstack((x_to_plot, x_to_plot[-1]+delta_x)), np.hstack((y_to_plot, y_to_plot[-1]+delta_y)), values_to_plot)
-			plt.colorbar(cmesh)
+			cbar = plt.colorbar(cmesh)
 		else:
 			cmesh = ax.pcolormesh(np.hstack((x_to_plot, x_to_plot[-1]+delta_x)), np.hstack((y_to_plot, y_to_plot[-1]+delta_y)), values_to_plot, vmin=cblimits[0], vmax=cblimits[1])
-			plt.colorbar(cmesh, extend='both')
+			cbar = plt.colorbar(cmesh, extend='both')
 		if axis_image:
 			ax.axis('image')
 		ax.tick_params(axis='both', labelsize=mySize)
+		cbar.ax.tick_params(labelsize=mySize)
 		ax.set_title(comp[2]+'-Component - Slice {:d}'.format(slice), fontsize=mySize)
 		if use_nodes:
 			ax.set_xlabel(x_label, fontsize=mySize)
