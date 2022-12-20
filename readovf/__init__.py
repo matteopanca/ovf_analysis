@@ -200,7 +200,7 @@ class OVF_File:
         scalar_prod = norm_dir[0]*self.x_values + norm_dir[1]*self.y_values + norm_dir[2]*self.z_values
         useful_mask = self.not_mask()
         scalar_prod = np.ma.masked_array(scalar_prod, useful_mask) #masked array to be considered
-        if limits != None:
+        if limits is not None:
             sub_range = []
             axis = [self.z_axis, self.y_axis, self.x_axis]
             for i in range(3):
@@ -218,7 +218,7 @@ class OVF_File:
         else:
             return result
     
-    def plot(self, comp, level=0, use_nodes=False, cblimits=None, axlimits=None, figsize=(8,8)):
+    def plot(self, comp, level=0, use_nodes=False, cblimits=None, axlimits=None, cmap=None, figsize=(8,8)):
         useful_mask = self.not_mask()
         if comp[0:2] == 'xy' or comp[0:2] == 'yx':
             axis_image = True
@@ -292,7 +292,7 @@ class OVF_File:
         
         values_to_plot = np.ma.masked_array(values_to_plot, useful_mask) #masked array to be plotted
         
-        if axlimits != None:
+        if axlimits is not None:
             x_subRange = np.logical_and(x_to_plot >= axlimits[0], x_to_plot < axlimits[1])
             y_subRange = np.logical_and(y_to_plot >= axlimits[2], y_to_plot < axlimits[3])
             x_to_plot = x_to_plot[x_subRange]
@@ -301,13 +301,15 @@ class OVF_File:
             values_to_plot = values_to_plot[y_subRange, :]
         
         mySize = int(1.8*figsize[0])
+        if cmap is None:
+            cmap = plt.get_cmap('jet', 128)
         fig = plt.figure(figsize=figsize)
         ax = fig.add_subplot(1,1,1)
-        if cblimits == None:
-            cmesh = ax.pcolormesh(np.hstack((x_to_plot, x_to_plot[-1]+delta_x)), np.hstack((y_to_plot, y_to_plot[-1]+delta_y)), values_to_plot)
+        if cblimits is None:
+            cmesh = ax.pcolormesh(np.hstack((x_to_plot, x_to_plot[-1]+delta_x)), np.hstack((y_to_plot, y_to_plot[-1]+delta_y)), values_to_plot, cmap=cmap)
             cbar = plt.colorbar(cmesh)
         else:
-            cmesh = ax.pcolormesh(np.hstack((x_to_plot, x_to_plot[-1]+delta_x)), np.hstack((y_to_plot, y_to_plot[-1]+delta_y)), values_to_plot, vmin=cblimits[0], vmax=cblimits[1])
+            cmesh = ax.pcolormesh(np.hstack((x_to_plot, x_to_plot[-1]+delta_x)), np.hstack((y_to_plot, y_to_plot[-1]+delta_y)), values_to_plot, cmap=cmap, vmin=cblimits[0], vmax=cblimits[1])
             cbar = plt.colorbar(cmesh, extend='both')
         if axis_image:
             ax.axis('image')
@@ -408,13 +410,19 @@ def mumax3_pt(filename, col_x, col_y, n_lines=-1, n_loops=(1,0,0), ax1=None):
         data_x.append(data_x_complete[i*points_per_loop:(i+1)*points_per_loop])
         data_y.append(data_y_complete[i*points_per_loop:(i+1)*points_per_loop])
     
-    if ax1 == None:
-        fig = plt.figure(figsize=(16,9))
+    new_fig = False
+    if ax1 is None:
+        fig = plt.figure(figsize=(8,6))
         ax1 = fig.add_subplot(1,1,1)
+        new_fig = True
     for i in range(n_loops[1], n_loops[2]+1):
         ax1.plot(data_x[i], data_y[i], '-o', linewidth=2, label='{:d}'.format(i))
     ax1.grid(True)
     if n_loops[0] > 1:
         ax1.legend(loc='best')
-    plt.show()
+    if new_fig:
+        # ax1.set_xlabel('X axis')
+        # ax1.set_ylabel('Y axis')
+        plt.tight_layout()
+        plt.show()
     return ax1, data_x, data_y
