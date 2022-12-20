@@ -16,7 +16,7 @@ class OVF_File:
 
 	#----- CONSTRUCTOR -----
 	
-	def __init__(self, fname, quantity='m', mult_coeff=0):
+	def __init__(self, fname, quantity='m', mult_coeff=None):
 		if type(fname) == str:
 			return self.from_ovf(fname, quantity, mult_coeff)
 		else:
@@ -105,7 +105,7 @@ class OVF_File:
 				#return None #useful if removing the "raise"
 		
 		#split the data in the proper arrays
-		if mult_coeff != 0:
+		if mult_coeff is not None:
 			data_stream *= mult_coeff
 		
 		self.z_axis_nodes = np.arange(0, self.nodes[0], 1, dtype=inType_tuple[type_index])
@@ -218,7 +218,7 @@ class OVF_File:
 		else:
 			return result
 	
-	def plot(self, comp, slice, use_nodes=False, cblimits=None, axlimits=None, figsize=(10,10)):
+	def plot(self, comp, level=0, use_nodes=False, cblimits=None, axlimits=None, figsize=(8,8)):
 		useful_mask = self.not_mask()
 		if comp[0:2] == 'xy' or comp[0:2] == 'yx':
 			axis_image = True
@@ -234,15 +234,15 @@ class OVF_File:
 				delta_y = self.stepsize[1]
 			x_label = 'x'
 			y_label = 'y'
-			useful_mask = useful_mask[slice, :, :]
+			useful_mask = useful_mask[level, :, :]
 			if comp[2] == 'x':
-				values_to_plot = self.x_values[slice, :, :]
+				values_to_plot = self.x_values[level, :, :]
 			elif comp[2] == 'y':
-				values_to_plot = self.y_values[slice, :, :]
+				values_to_plot = self.y_values[level, :, :]
 			elif comp[2] == 'z':
-				values_to_plot = self.z_values[slice, :, :]
+				values_to_plot = self.z_values[level, :, :]
 			elif comp[2] == 'm':
-				values_to_plot = self.mod()[slice, :, :]
+				values_to_plot = self.mod()[level, :, :]
 		elif comp[0:2] == 'xz' or comp[0:2] == 'zx':
 			axis_image = False
 			if use_nodes:
@@ -257,15 +257,15 @@ class OVF_File:
 				delta_y = self.stepsize[0]
 			x_label = 'x'
 			y_label = 'z'
-			useful_mask = useful_mask[:, slice, :]
+			useful_mask = useful_mask[:, level, :]
 			if comp[2] == 'x':
-				values_to_plot = self.x_values[:, slice, :]
+				values_to_plot = self.x_values[:, level, :]
 			elif comp[2] == 'y':
-				values_to_plot = self.y_values[:, slice, :]
+				values_to_plot = self.y_values[:, level, :]
 			elif comp[2] == 'z':
-				values_to_plot = self.z_values[:, slice, :]
+				values_to_plot = self.z_values[:, level, :]
 			elif comp[2] == 'm':
-				values_to_plot = self.mod()[:, slice, :]
+				values_to_plot = self.mod()[:, level, :]
 		elif comp[0:2] == 'yz' or comp[0:2] == 'zy':
 			axis_image = False
 			if use_nodes:
@@ -280,15 +280,15 @@ class OVF_File:
 				delta_y = self.stepsize[0]
 			x_label = 'y'
 			y_label = 'z'
-			useful_mask = useful_mask[:, :, slice]
+			useful_mask = useful_mask[:, :, level]
 			if comp[2] == 'x':
-				values_to_plot = self.x_values[:, :, slice]
+				values_to_plot = self.x_values[:, :, level]
 			elif comp[2] == 'y':
-				values_to_plot = self.y_values[:, :, slice]
+				values_to_plot = self.y_values[:, :, level]
 			elif comp[2] == 'z':
-				values_to_plot = self.z_values[:, :, slice]
+				values_to_plot = self.z_values[:, :, level]
 			elif comp[2] == 'm':
-				values_to_plot = self.mod()[:, :, slice]
+				values_to_plot = self.mod()[:, :, level]
 		
 		values_to_plot = np.ma.masked_array(values_to_plot, useful_mask) #masked array to be plotted
 		
@@ -313,7 +313,7 @@ class OVF_File:
 			ax.axis('image')
 		ax.tick_params(axis='both', labelsize=mySize)
 		cbar.ax.tick_params(labelsize=mySize)
-		ax.set_title(comp[2]+'-Component - Slice {:d}'.format(slice), fontsize=mySize)
+		ax.set_title(comp[2]+'-Component - Slice {:d}'.format(level), fontsize=mySize)
 		if use_nodes:
 			ax.set_xlabel(x_label, fontsize=mySize)
 			ax.set_ylabel(y_label, fontsize=mySize)
@@ -323,6 +323,7 @@ class OVF_File:
 		ax.grid(True)
 		plt.tight_layout()
 		plt.show()
+        return fig
 
 #-------------------- Functions --------------------
 
@@ -416,4 +417,4 @@ def mumax3_pt(filename, col_x, col_y, n_lines=-1, n_loops=(1,0,0), ax1=None):
 	if n_loops[0] > 1:
 		ax1.legend(loc='best')
 	plt.show()
-	return (ax1, data_x, data_y)
+	return ax1, data_x, data_y
