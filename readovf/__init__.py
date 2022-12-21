@@ -332,9 +332,9 @@ class OVF_File:
 #Save multiple data to HDF5 file (not part of the OVF_File class)
 #"obj" have to be an object compatible with the "len()" method
 #"file_mode" have to be 'w' (default) or 'a'
-def save_h5(obj, output_name, file_mode='w'):
+def save_h5(output_path, obj, file_mode='w'):
     n_maps = len(obj)
-    f = h5py.File(output_name+'.hdf5', file_mode)
+    f = h5py.File(output_path, file_mode)
     start_index = len(f.keys())
     
     for i in range(n_maps):
@@ -364,8 +364,8 @@ def save_h5(obj, output_name, file_mode='w'):
 
 #Open HDF5 file (not part of the OVF_File class)
 #"read_range" have to be an object compatible with the "len()" method
-def open_h5(input_name, read_range=[]):
-    f = h5py.File(input_name+'.hdf5', 'r')
+def open_h5(input_path, read_range=[]):
+    f = h5py.File(input_path, 'r')
     n_maps = len(f.keys())
     if len(read_range) == 0:
         start_index = 0
