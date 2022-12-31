@@ -218,7 +218,7 @@ class OVF_File:
         else:
             return result
     
-    def plot(self, comp, level=0, use_nodes=False, cblimits=None, axlimits=None, cmap=None, figsize=(8,8)):
+    def plot(self, comp, level=0, use_nodes=False, cblimits=None, axlimits=None, cmap=None, figsize=(8,8), show=True):
         useful_mask = self.not_mask()
         if comp[0:2] == 'xy' or comp[0:2] == 'yx':
             axis_image = True
@@ -300,32 +300,37 @@ class OVF_File:
             values_to_plot = values_to_plot[:, x_subRange]
             values_to_plot = values_to_plot[y_subRange, :]
         
-        mySize = int(1.8*figsize[0])
-        if cmap is None:
-            cmap = plt.get_cmap('jet', 128)
-        fig = plt.figure(figsize=figsize)
-        ax = fig.add_subplot(1,1,1)
-        if cblimits is None:
-            cmesh = ax.pcolormesh(np.hstack((x_to_plot, x_to_plot[-1]+delta_x)), np.hstack((y_to_plot, y_to_plot[-1]+delta_y)), values_to_plot, cmap=cmap)
-            cbar = plt.colorbar(cmesh)
-        else:
-            cmesh = ax.pcolormesh(np.hstack((x_to_plot, x_to_plot[-1]+delta_x)), np.hstack((y_to_plot, y_to_plot[-1]+delta_y)), values_to_plot, cmap=cmap, vmin=cblimits[0], vmax=cblimits[1])
-            cbar = plt.colorbar(cmesh, extend='both')
-        if axis_image:
-            ax.axis('image')
-        ax.tick_params(axis='both', labelsize=mySize)
-        cbar.ax.tick_params(labelsize=mySize)
-        ax.set_title(comp[2]+'-Component - Slice {:d}'.format(level), fontsize=mySize)
-        if use_nodes:
-            ax.set_xlabel(x_label, fontsize=mySize)
-            ax.set_ylabel(y_label, fontsize=mySize)
-        else:
-            ax.set_xlabel(x_label+' (nm)', fontsize=mySize)
-            ax.set_ylabel(y_label+' (nm)', fontsize=mySize)
-        ax.grid(True)
-        plt.tight_layout()
-        plt.show()
-        return fig
+        xAxis_to_plot = np.hstack((x_to_plot, x_to_plot[-1]+delta_x))
+        yAxis_to_plot = np.hstack((y_to_plot, y_to_plot[-1]+delta_y))
+        
+        if show:
+            mySize = int(1.8*figsize[0])
+            if cmap is None:
+                cmap = plt.get_cmap('jet', 128)
+            fig = plt.figure(figsize=figsize)
+            ax = fig.add_subplot(1,1,1)
+            if cblimits is None:
+                cmesh = ax.pcolormesh(xAxis_to_plot, yAxis_to_plot, values_to_plot, cmap=cmap)
+                cbar = plt.colorbar(cmesh)
+            else:
+                cmesh = ax.pcolormesh(xAxis_to_plot, yAxis_to_plot, values_to_plot, cmap=cmap, vmin=cblimits[0], vmax=cblimits[1])
+                cbar = plt.colorbar(cmesh, extend='both')
+            if axis_image:
+                ax.axis('image')
+            ax.tick_params(axis='both', labelsize=mySize)
+            cbar.ax.tick_params(labelsize=mySize)
+            ax.set_title(comp[2]+'-Component - Slice {:d}'.format(level), fontsize=mySize)
+            if use_nodes:
+                ax.set_xlabel(x_label, fontsize=mySize)
+                ax.set_ylabel(y_label, fontsize=mySize)
+            else:
+                ax.set_xlabel(x_label+' (nm)', fontsize=mySize)
+                ax.set_ylabel(y_label+' (nm)', fontsize=mySize)
+            ax.grid(True)
+            plt.tight_layout()
+            plt.show()
+        
+        return xAxis_to_plot, yAxis_to_plot, values_to_plot
 
 #-------------------- Functions --------------------
 
