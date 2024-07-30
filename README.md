@@ -10,4 +10,10 @@ I'm not a professional programmer, so just download everything you see here and 
 python .\setup.py install
 ```
 
+or
+
+```
+pip install .
+```
+
 where the setup.py file is. Enjoy!
