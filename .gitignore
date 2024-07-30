@@ -3,3 +3,4 @@ readovf/__pycache__/
 MANIFEST
 dist/
 build/
+ReadOVF.egg-info/
