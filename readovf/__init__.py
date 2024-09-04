@@ -219,7 +219,10 @@ class OVF_File:
             return result
     
     def plot(self, comp, level=0, use_nodes=False, cblimits=None, axlimits=None, cmap=None, figsize=(8,8), show=True):
-        useful_mask = self.not_mask()
+        if self.quantity  == 'm':
+            useful_mask = self.not_mask()
+        else:
+            useful_mask = np.zeros(self.x_values.shape, dtype=bool)
         if comp[0:2] == 'xy' or comp[0:2] == 'yx':
             axis_image = True
             if use_nodes:
@@ -326,7 +329,7 @@ class OVF_File:
             else:
                 ax.set_xlabel(x_label+' (nm)', fontsize=mySize)
                 ax.set_ylabel(y_label+' (nm)', fontsize=mySize)
-            ax.grid(True)
+            # ax.grid(True)
             plt.tight_layout()
             plt.show()
         
