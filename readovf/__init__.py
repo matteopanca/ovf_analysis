@@ -29,11 +29,11 @@ class OVF_File:
         
         self.fname = fname
         self.quantity = quantity #'m' for magnetization; 'h' for field
-        collect_param = np.zeros(1, dtype=[(param_tuple[0],np.int_),(param_tuple[1],np.int_,3),(param_tuple[2],np.float_,3),(param_tuple[3],np.float_,3),(param_tuple[4],np.float_,3),(param_tuple[5],np.float_)])
-        self.nodes = np.zeros(3, dtype=np.int_)
-        self.stepsize = np.zeros(3, dtype=np.float_)
-        self.mincoord = np.zeros(3, dtype=np.float_)
-        self.maxcoord = np.zeros(3, dtype=np.float_)
+        collect_param = np.zeros(1, dtype=[(param_tuple[0],int),(param_tuple[1],int,3),(param_tuple[2],float,3),(param_tuple[3],float,3),(param_tuple[4],float,3),(param_tuple[5],float)])
+        self.nodes = np.zeros(3, dtype=int)
+        self.stepsize = np.zeros(3, dtype=float)
+        self.mincoord = np.zeros(3, dtype=float)
+        self.maxcoord = np.zeros(3, dtype=float)
         self.index = -1 #not always used, but sometimes useful
         self.ok = False
         
